@@ -33,14 +33,14 @@ export async function POST(req: NextRequest) {
     let pdfBuffer: Buffer;
     if (type === "cv" && cvData.cv) {
       pdfBuffer = await renderToBuffer(
-        React.createElement(CvPdfDocument, { cvData: cvData.cv, hasWatermark })
+        React.createElement(CvPdfDocument, { cvData: cvData.cv, hasWatermark }) as any
       );
     } else {
       // Pour la lettre et le message, on peut créer un PDF simple
       return NextResponse.json({ error: "NOT_IMPLEMENTED" }, { status: 501 });
     }
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="cv-${Date.now()}.pdf"`,
