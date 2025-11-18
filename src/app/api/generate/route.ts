@@ -5,7 +5,7 @@ import { getSupabaseServer } from "@/lib/supabaseServer";
 import { aiConfig } from "@/lib/ai/aiConfig";
 
 // On accepte le payload complet défini par requestSchema; on valide faiblement
-const InputSchema = z.record(z.any());
+const InputSchema = z.record(z.string(), z.any());
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
