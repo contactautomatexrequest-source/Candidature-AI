@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (type === "cv" && cvData.cv) {
       pdfBuffer = await renderToBuffer(
         React.createElement(CvPdfDocument, { cvData: cvData.cv, hasWatermark }) as any
-      );
+      ) as Buffer;
     } else {
       // Pour la lettre et le message, on peut créer un PDF simple
       return NextResponse.json({ error: "NOT_IMPLEMENTED" }, { status: 501 });
