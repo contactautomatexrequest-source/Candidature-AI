@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-10-29.clover",
-});
-
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "STRIPE_NOT_CONFIGURED" }, { status: 500 });
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-10-29.clover",
+  });
+
   const signature = req.headers.get("stripe-signature") || "";
   const payload = await req.text();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET || "");
+    event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err: any) {
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
