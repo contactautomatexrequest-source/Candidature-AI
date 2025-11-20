@@ -34,9 +34,9 @@ export function AuthPanel() {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const redirectTo = typeof window !== "undefined" 
-          ? `${window.location.origin}/auth/callback`
-          : `${process.env.NEXT_PUBLIC_APP_URL || "https://candidatureai.netlify.app"}/auth/callback`;
+        // Toujours utiliser l'URL de production pour les emails de confirmation
+        // Les emails sont toujours envoyés depuis le serveur de production
+        const redirectTo = "https://candidatureai.netlify.app/auth/callback";
         const { error, data } = await supabaseClient.auth.signUp({ 
           email, 
           password,
