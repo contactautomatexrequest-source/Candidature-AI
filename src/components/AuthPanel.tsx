@@ -86,7 +86,27 @@ export function AuthPanel() {
       const { data } = await supabaseClient.auth.getUser();
       setUserEmail(data.user?.email ?? null);
     } catch (e: any) {
-      const errorMsg = e?.message ?? "Erreur";
+      let errorMsg = "Erreur lors de l'authentification";
+      
+      // Détecter différents types d'erreurs
+      const errorString = e?.toString() || "";
+      const errorMessage = e?.message || "";
+      
+      if (errorString.includes("Failed to fetch") || errorString.includes("NetworkError") || errorMessage.includes("Failed to fetch")) {
+        errorMsg = "Erreur de connexion au serveur. Vérifie ta connexion internet et réessaie. Si le problème persiste, vérifie que les variables d'environnement Supabase sont bien configurées.";
+      } else if (errorString.includes("Supabase credentials") || errorMessage.includes("credentials")) {
+        errorMsg = "Configuration manquante. Les variables d'environnement Supabase ne sont pas définies. Contacte le support.";
+      } else if (errorMessage) {
+        errorMsg = errorMessage;
+      }
+      
+      console.error("Auth error:", {
+        error: e,
+        message: errorMessage,
+        string: errorString,
+        stack: e?.stack,
+      });
+      
       showToast(errorMsg, "error");
       setError(errorMsg);
     } finally {
