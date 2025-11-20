@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
+import { useToast } from "@/components/ui/ToastProvider";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function CommencerPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -10,6 +12,7 @@ export default function CommencerPage() {
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [pdfLoading, setPdfLoading] = useState(false);
+  const { showToast } = useToast();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -210,18 +213,22 @@ export default function CommencerPage() {
       });
       const data = await res.json();
       if (!res.ok) {
+        let errorMsg = "Une erreur est survenue.";
         if (data?.error === "FREE_LIMIT_REACHED") {
-          setError("Limite atteinte sur le plan gratuit. Passe en premium pour continuer.");
+          errorMsg = "Limite atteinte sur le plan gratuit. Passe en premium pour continuer.";
         } else if (res.status === 401) {
-          setError("Connecte-toi pour générer ta candidature.");
-        } else {
-          setError("Une erreur est survenue.");
+          errorMsg = "Connecte-toi pour générer ta candidature.";
         }
+        setError(errorMsg);
+        showToast(errorMsg, "error");
         return;
       }
       setResults(data);
+      showToast("CV, lettre et message générés avec succès !", "success");
     } catch (e: any) {
-      setError("Erreur réseau.");
+      const errorMsg = "Erreur réseau. Réessaie dans quelques instants.";
+      setError(errorMsg);
+      showToast(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -237,7 +244,9 @@ export default function CommencerPage() {
         body: JSON.stringify({ cvData: results, type: tab }),
       });
       if (!res.ok) {
-        setError("Erreur lors de la génération du PDF.");
+        const errorMsg = "Erreur lors de la génération du PDF.";
+        setError(errorMsg);
+        showToast(errorMsg, "error");
         return;
       }
       const blob = await res.blob();
@@ -249,8 +258,11 @@ export default function CommencerPage() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      showToast("PDF téléchargé avec succès !", "success");
     } catch (e: any) {
-      setError("Erreur lors du téléchargement.");
+      const errorMsg = "Erreur lors du téléchargement.";
+      setError(errorMsg);
+      showToast(errorMsg, "error");
     } finally {
       setPdfLoading(false);
     }
@@ -442,10 +454,24 @@ export default function CommencerPage() {
           <p className="text-sm font-semibold text-slate-900">H. Détails optionnels</p>
           <textarea className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 min-h-[100px]" placeholder="Contrainte ou précision libre" value={form.constraints} onChange={update("constraints")}></textarea>
         </div>
-        <button disabled={loading} onClick={onGenerate} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60">
+        <button 
+          disabled={loading} 
+          onClick={onGenerate} 
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 hover-lift disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {loading && (
+            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
           {loading ? "Génération en cours..." : userEmail ? "Générer mon CV, ma lettre et mon message" : "Créer un compte pour générer"}
         </button>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && (
+          <div className="animate-fade-in">
+            <p className="text-xs text-red-600">{error}</p>
+          </div>
+        )}
         <div className="mt-6 space-y-4">
           <div className="inline-flex rounded-full bg-slate-100 p-1 text-xs">
             <button onClick={() => setTab("cv")} className={`inline-flex min-w-[96px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-medium transition ${tab === "cv" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}>CV</button>
@@ -455,16 +481,28 @@ export default function CommencerPage() {
           {subscriptionStatus !== "active" && (
             <p className="text-xs text-slate-600">Pour la version gratuite, le PDF inclut un watermark.</p>
           )}
+          {loading && (
+            <div className="animate-fade-in space-y-4">
+              <Skeleton className="h-32" lines={3} />
+              <Skeleton className="h-24" lines={2} />
+            </div>
+          )}
           {results && (
-            <>
+            <div className="animate-fade-in">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-600">Résultat généré</span>
                 {tab === "cv" && results.cv && (
                   <button
                     onClick={onDownloadPdf}
                     disabled={pdfLoading}
-                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700 hover-lift disabled:opacity-60"
                   >
+                    {pdfLoading && (
+                      <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
                     {pdfLoading ? "Génération..." : "Télécharger en PDF"}
                   </button>
                 )}
@@ -481,7 +519,7 @@ export default function CommencerPage() {
                   </div>
                 )}
               </div>
-            </>
+            </div>
           )}
           {userEmail && (
             <div className="text-right">

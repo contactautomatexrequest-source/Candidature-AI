@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export function AuthPanel() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export function AuthPanel() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     supabaseClient.auth.getUser().then(({ data }) => {
@@ -28,12 +30,14 @@ export function AuthPanel() {
       const message = params.get("message");
       const errorParam = params.get("error");
       if (message) {
+        showToast(message, "success");
         setSuccess(message);
         setError(null);
         // Nettoyer l'URL
         window.history.replaceState({}, "", window.location.pathname);
       }
       if (errorParam) {
+        showToast(errorParam, "error");
         setError(errorParam);
         setSuccess(null);
         // Nettoyer l'URL
@@ -49,6 +53,7 @@ export function AuthPanel() {
       if (mode === "signin") {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        showToast("Vous êtes bien connecté", "success");
         setSuccess("Vous êtes bien connecté");
         setError(null);
       } else {
@@ -66,11 +71,14 @@ export function AuthPanel() {
         if (data.user && !data.session) {
           // Email de confirmation envoyé
           setError(null);
-          setSuccess("Un email de confirmation a été envoyé. Clique sur le lien dans l'email pour confirmer ton compte.");
+          const msg = "Un email de confirmation a été envoyé. Clique sur le lien dans l'email pour confirmer ton compte.";
+          showToast(msg, "info");
+          setSuccess(msg);
           return;
         }
         // Si une session est créée directement (email confirmé automatiquement)
         if (data.session) {
+          showToast("Compte créé", "success");
           setSuccess("Compte créé");
           setError(null);
         }
@@ -78,7 +86,9 @@ export function AuthPanel() {
       const { data } = await supabaseClient.auth.getUser();
       setUserEmail(data.user?.email ?? null);
     } catch (e: any) {
-      setError(e?.message ?? "Erreur");
+      const errorMsg = e?.message ?? "Erreur";
+      showToast(errorMsg, "error");
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

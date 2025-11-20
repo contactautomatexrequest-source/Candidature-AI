@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,8 +20,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <body className={`${inter.className} min-h-screen bg-slate-50 text-slate-900 antialiased`}>
-        <Navbar />
-        <main>{children}</main>
+        <ToastProvider>
+          <Navbar />
+          <main>{children}</main>
+        </ToastProvider>
       </body>
     </html>
   );
