@@ -34,8 +34,23 @@ export function AuthPanel() {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabaseClient.auth.signUp({ email, password });
+        const redirectTo = typeof window !== "undefined" 
+          ? `${window.location.origin}/auth/callback`
+          : `${process.env.NEXT_PUBLIC_APP_URL || "https://candidatureai.netlify.app"}/auth/callback`;
+        const { error, data } = await supabaseClient.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: redirectTo,
+          },
+        });
         if (error) throw error;
+        if (data.user && !data.session) {
+          // Email de confirmation envoyé
+          setError(null);
+          alert("Un email de confirmation a été envoyé. Clique sur le lien dans l'email pour confirmer ton compte.");
+          return;
+        }
       }
       const { data } = await supabaseClient.auth.getUser();
       setUserEmail(data.user?.email ?? null);
