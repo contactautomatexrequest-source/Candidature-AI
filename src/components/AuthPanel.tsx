@@ -8,6 +8,7 @@ export function AuthPanel() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,11 +18,26 @@ export function AuthPanel() {
   }, []);
 
   // Active le mode "signup" si l'URL contient ?mode=signup
+  // Affiche les messages de succès/erreur depuis l'URL
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("mode") === "signup") {
         setMode("signup");
+      }
+      const message = params.get("message");
+      const errorParam = params.get("error");
+      if (message) {
+        setSuccess(message);
+        setError(null);
+        // Nettoyer l'URL
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      if (errorParam) {
+        setError(errorParam);
+        setSuccess(null);
+        // Nettoyer l'URL
+        window.history.replaceState({}, "", window.location.pathname);
       }
     }
   }, []);
@@ -33,6 +49,8 @@ export function AuthPanel() {
       if (mode === "signin") {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        setSuccess("Vous êtes bien connecté");
+        setError(null);
       } else {
         // Toujours utiliser l'URL de production pour les emails de confirmation
         // Les emails sont toujours envoyés depuis le serveur de production
@@ -48,8 +66,13 @@ export function AuthPanel() {
         if (data.user && !data.session) {
           // Email de confirmation envoyé
           setError(null);
-          alert("Un email de confirmation a été envoyé. Clique sur le lien dans l'email pour confirmer ton compte.");
+          setSuccess("Un email de confirmation a été envoyé. Clique sur le lien dans l'email pour confirmer ton compte.");
           return;
+        }
+        // Si une session est créée directement (email confirmé automatiquement)
+        if (data.session) {
+          setSuccess("Compte créé");
+          setError(null);
         }
       }
       const { data } = await supabaseClient.auth.getUser();
@@ -106,6 +129,7 @@ export function AuthPanel() {
           onChange={(e) => setPassword(e.target.value)}
         />
         {error && <p className="text-xs text-red-600">{error}</p>}
+        {success && <p className="text-xs text-green-600">{success}</p>}
         <button
           disabled={loading}
           onClick={onSubmit}

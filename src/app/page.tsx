@@ -1,3 +1,5 @@
+import { CommencerButton } from "@/components/CommencerButton";
+
 export default function HomePage() {
   return (
       <main className="min-h-[calc(100vh-56px)] pb-24">
@@ -19,12 +21,9 @@ export default function HomePage() {
               Tu colles l’offre, tu réponds à quelques questions, et Candidature AI génère un CV propre, une lettre de motivation ciblée et un message prêt à envoyer.
                 </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <a
-                    href="/commencer"
-                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
-                  >
+                  <CommencerButton className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
                 Commencer gratuitement
-                  </a>
+                  </CommencerButton>
                   <a
                     href="/fonctionnalites"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-900 shadow-sm transition hover:bg-slate-50"

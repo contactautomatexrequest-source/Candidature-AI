@@ -1,3 +1,5 @@
+import { CommencerButton } from "@/components/CommencerButton";
+
 export default function PourQuiPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 lg:px-8 py-10 lg:py-14 space-y-10 bg-slate-950">
@@ -23,9 +25,9 @@ export default function PourQuiPage() {
       <section className="flex flex-col items-center gap-3 text-center">
         <h2 className="text-lg font-semibold tracking-tight text-blue-600">Tu te reconnais dans l’un de ces profils ?</h2>
         <p className="text-sm text-white">Teste gratuitement une candidature complète.</p>
-        <a href="/commencer" className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
+        <CommencerButton className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
           Commencer
-        </a>
+        </CommencerButton>
       </section>
     </main>
   );

@@ -1,4 +1,5 @@
 import { CheckoutButton } from "@/components/CheckoutButton";
+import { CommencerButton } from "@/components/CommencerButton";
 
 export default function FonctionnalitesPage() {
   return (
@@ -30,9 +31,9 @@ export default function FonctionnalitesPage() {
               <li>Watermark sur les PDFs</li>
               <li>Accès au formulaire complet</li>
             </ul>
-            <a href="/commencer" className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
+            <CommencerButton className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
               Essayer gratuitement
-            </a>
+            </CommencerButton>
           </div>
           <div className="rounded-2xl border border-blue-200 bg-white p-6 shadow-md">
             <p className="text-sm font-semibold text-slate-900">Premium</p>
